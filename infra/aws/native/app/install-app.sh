@@ -34,6 +34,16 @@ sudo systemctl enable --now postgresql
 sudo -u postgres psql -tc "SELECT 1 FROM pg_roles WHERE rolname='${POSTGRES_USER}'" | grep -q 1 || \
   sudo -u postgres psql -c "CREATE USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';"
 
+sudo -u postgres psql -c "ALTER USER ${POSTGRES_USER} WITH PASSWORD '${POSTGRES_PASSWORD}';"
+
+PG_HBA=$(sudo -u postgres psql -Atc "SHOW hba_file;")
+if ! sudo grep -q '^host all all 127\.0\.0\.1/32 scram-sha-256' "$PG_HBA"; then
+  sudo cp "$PG_HBA" "${PG_HBA}.bak.$(date +%Y%m%d%H%M%S)"
+  sudo sed -i '1ihost all all ::1/128 scram-sha-256' "$PG_HBA"
+  sudo sed -i '1ihost all all 127.0.0.1/32 scram-sha-256' "$PG_HBA"
+  sudo systemctl restart postgresql
+fi
+
 sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='fraud_logs_db'" | grep -q 1 || \
   sudo -u postgres createdb -O "${POSTGRES_USER}" fraud_logs_db
 

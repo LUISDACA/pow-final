@@ -2,6 +2,7 @@ import base64
 from datetime import datetime, timezone
 from io import BytesIO
 import os
+from typing import Optional
 
 import pyotp
 import qrcode
@@ -104,13 +105,13 @@ def issue_session(response: Response, user: dict):
     }
 
 
-def require_csrf(request: Request, x_csrf_token: str | None):
+def require_csrf(request: Request, x_csrf_token: Optional[str]):
     cookie_token = request.cookies.get("csrf_token")
     if not cookie_token or not x_csrf_token or cookie_token != x_csrf_token:
         raise HTTPException(status_code=403, detail="Invalid CSRF token")
 
 
-def get_current_user(authorization: str | None = Header(default=None)):
+def get_current_user(authorization: Optional[str] = Header(default=None)):
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Missing access token")
 
@@ -203,7 +204,7 @@ def verify_login_2fa(payload: TwoFactorLoginRequest, response: Response):
 def refresh_session(
     request: Request,
     response: Response,
-    x_csrf_token: str | None = Header(default=None),
+    x_csrf_token: Optional[str] = Header(default=None),
 ):
     require_csrf(request, x_csrf_token)
 
@@ -248,7 +249,7 @@ def refresh_session(
 def logout(
     request: Request,
     response: Response,
-    x_csrf_token: str | None = Header(default=None),
+    x_csrf_token: Optional[str] = Header(default=None),
 ):
     require_csrf(request, x_csrf_token)
 
@@ -267,7 +268,7 @@ def logout(
 @app.post("/api/auth/2fa/setup")
 def setup_2fa(
     request: Request,
-    x_csrf_token: str | None = Header(default=None),
+    x_csrf_token: Optional[str] = Header(default=None),
     current_user: dict = Depends(get_current_user),
 ):
     require_csrf(request, x_csrf_token)
@@ -300,7 +301,7 @@ def setup_2fa(
 def verify_2fa(
     payload: TotpVerifyRequest,
     request: Request,
-    x_csrf_token: str | None = Header(default=None),
+    x_csrf_token: Optional[str] = Header(default=None),
     current_user: dict = Depends(get_current_user),
 ):
     require_csrf(request, x_csrf_token)
@@ -323,7 +324,7 @@ def verify_2fa(
 @app.post("/api/auth/2fa/disable")
 def disable_2fa(
     request: Request,
-    x_csrf_token: str | None = Header(default=None),
+    x_csrf_token: Optional[str] = Header(default=None),
     current_user: dict = Depends(get_current_user),
 ):
     require_csrf(request, x_csrf_token)
