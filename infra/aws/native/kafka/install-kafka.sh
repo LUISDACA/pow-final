@@ -9,7 +9,12 @@ KAFKA_TGZ="kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz"
 KAFKA_URL="https://www.apache.org/dyn/closer.lua/kafka/${KAFKA_VERSION}/${KAFKA_TGZ}?action=download"
 KAFKA_ARCHIVE_URL="https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/${KAFKA_TGZ}"
 
-sudo dnf install -y java-17-amazon-corretto-headless curl tar nftables
+sudo dnf install -y java-17-amazon-corretto-headless tar nftables
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "curl is required but was not found. Amazon Linux 2023 normally includes curl-minimal." >&2
+  exit 1
+fi
 
 cd /tmp
 rm -f "$KAFKA_TGZ"
