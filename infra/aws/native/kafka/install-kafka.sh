@@ -23,7 +23,7 @@ tar -tzf "$KAFKA_TGZ" >/dev/null
 sudo rm -rf /opt/kafka
 sudo tar -xzf "$KAFKA_TGZ" -C /opt
 sudo mv "/opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION}" /opt/kafka
-sudo mkdir -p /var/lib/kafka/data
+sudo mkdir -p /opt/kafka/config/kraft /var/lib/kafka/data
 sudo chown -R ec2-user:ec2-user /opt/kafka /var/lib/kafka
 
 cat > /opt/kafka/config/kraft/server.properties <<EOF
