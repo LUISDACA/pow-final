@@ -16,7 +16,7 @@ table inet filter {
         ip protocol icmp accept
         ip6 nexthdr ipv6-icmp accept
 
-        ip saddr $ADMIN_PUBLIC_IP tcp dport 22 ct state new limit rate 4/minute accept
+        ip saddr $GATEWAY_PRIVATE_IP tcp dport 22 ct state new limit rate 4/minute accept
         ip saddr $GATEWAY_PRIVATE_IP tcp dport 3000 accept
 
         log prefix "nft app input drop: " drop
