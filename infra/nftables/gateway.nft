@@ -38,3 +38,11 @@ table inet filter {
         type filter hook output priority 0; policy accept;
     }
 }
+
+table ip nat {
+    chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+
+        ip saddr $DOCKER_BRIDGE_CIDR ip daddr { $API_PRIVATE_IP, $DASHBOARD_PRIVATE_IP } masquerade
+    }
+}
