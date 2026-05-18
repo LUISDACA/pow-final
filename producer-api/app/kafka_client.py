@@ -23,4 +23,4 @@ def send_log(topic: str, data: dict):
         json.dumps(data).encode("utf-8"),
         callback=delivery_report,
     )
-    producer.flush()
+    producer.flush(1)
