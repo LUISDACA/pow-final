@@ -55,3 +55,4 @@ Invoke-RestMethod "http://localhost:8080/ingest/lab/vulnerable-search?username=d
 - [Diagrama](docs/diagrama.md)
 - [AWS](infra/aws/README.md)
 - [AWS desde consola](docs/aws-consola-paso-a-paso.md)
+- [AWS sin Docker](docs/aws-sin-docker.md)

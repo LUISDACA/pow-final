@@ -1,0 +1,16 @@
+[Unit]
+Description=Fraud Log Pipeline Dashboard
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/opt/fraud-log-pipeline/dashboard
+EnvironmentFile=/etc/fraud-log-pipeline/app.env
+ExecStart=/opt/fraud-log-pipeline/dashboard/.venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 3000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

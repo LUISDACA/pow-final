@@ -1,0 +1,16 @@
+[Unit]
+Description=Fraud Log Pipeline Fraud Consumer
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/opt/fraud-log-pipeline/fraud-consumer
+EnvironmentFile=/etc/fraud-log-pipeline/app.env
+ExecStart=/opt/fraud-log-pipeline/fraud-consumer/.venv/bin/python consumer.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Apache Kafka Broker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ec2-user
+Group=ec2-user
+ExecStart=/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties
+ExecStop=/opt/kafka/bin/kafka-server-stop.sh
+Restart=always
+RestartSec=5
+LimitNOFILE=100000
+
+[Install]
+WantedBy=multi-user.target

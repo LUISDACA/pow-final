@@ -63,6 +63,10 @@ Si prefieres hacerlo sin AWS CLI local, sigue la guia:
 
 - [AWS desde la consola](aws-consola-paso-a-paso.md)
 
+Si quieres quitar Docker y operar con servicios nativos `systemd`, sigue:
+
+- [AWS sin Docker](aws-sin-docker.md)
+
 Crear stack:
 
 ```powershell
