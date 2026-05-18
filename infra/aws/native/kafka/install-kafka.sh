@@ -6,12 +6,20 @@ SCALA_VERSION="${SCALA_VERSION:-2.13}"
 KAFKA_PRIVATE_IP="${KAFKA_PRIVATE_IP:-$(hostname -I | awk '{print $1}')}"
 KAFKA_LOG_RETENTION_HOURS="${KAFKA_LOG_RETENTION_HOURS:-24}"
 KAFKA_TGZ="kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz"
-KAFKA_URL="https://downloads.apache.org/kafka/${KAFKA_VERSION}/${KAFKA_TGZ}"
+KAFKA_URL="https://www.apache.org/dyn/closer.lua/kafka/${KAFKA_VERSION}/${KAFKA_TGZ}?action=download"
+KAFKA_ARCHIVE_URL="https://archive.apache.org/dist/kafka/${KAFKA_VERSION}/${KAFKA_TGZ}"
 
-sudo dnf install -y java-17-amazon-corretto-headless wget tar nftables
+sudo dnf install -y java-17-amazon-corretto-headless curl tar nftables
 
 cd /tmp
-wget -q "$KAFKA_URL"
+rm -f "$KAFKA_TGZ"
+
+if ! curl -fL --retry 5 --retry-delay 3 "$KAFKA_URL" -o "$KAFKA_TGZ"; then
+  echo "Primary Kafka download failed, trying Apache archive..."
+  curl -fL --retry 5 --retry-delay 3 "$KAFKA_ARCHIVE_URL" -o "$KAFKA_TGZ"
+fi
+
+tar -tzf "$KAFKA_TGZ" >/dev/null
 sudo rm -rf /opt/kafka
 sudo tar -xzf "$KAFKA_TGZ" -C /opt
 sudo mv "/opt/kafka_${SCALA_VERSION}-${KAFKA_VERSION}" /opt/kafka
