@@ -654,6 +654,20 @@ docker --version
 docker compose version
 ```
 
+### `compose build requires buildx 0.17.0 or later`
+
+Instala Buildx en la EC2 donde fallo el build:
+
+```bash
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+sudo curl -SL https://github.com/docker/buildx/releases/download/v0.19.3/buildx-v0.19.3.linux-amd64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-buildx
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
+docker buildx version
+docker compose up --build -d
+docker compose ps
+```
+
 ### La API no llega a Kafka
 
 Revisa:
