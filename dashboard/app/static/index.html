@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fraud Log Pipeline</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section id="login-view" class="auth-panel">
+        <div>
+          <p class="eyebrow">Fraud Log Pipeline</p>
+          <h1>Dashboard</h1>
+        </div>
+
+        <form id="login-form" class="form">
+          <label>
+            Email
+            <input id="email" type="email" autocomplete="username" value="admin@example.com" required />
+          </label>
+          <label>
+            Password
+            <input id="password" type="password" autocomplete="current-password" value="Admin123" required />
+          </label>
+          <label id="totp-login-row" class="hidden">
+            Codigo 2FA
+            <input id="totp-login-code" type="text" inputmode="numeric" autocomplete="one-time-code" />
+          </label>
+          <button type="submit">Ingresar</button>
+          <p id="login-message" class="message"></p>
+        </form>
+      </section>
+
+      <section id="dashboard-view" class="dashboard hidden">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Fraud Log Pipeline</p>
+            <h1>Alertas en tiempo real</h1>
+          </div>
+          <div class="actions">
+            <button id="refresh-button" type="button">Actualizar</button>
+            <button id="logout-button" type="button" class="secondary">Salir</button>
+          </div>
+        </header>
+
+        <section class="stats">
+          <article>
+            <span>Logs</span>
+            <strong id="total-logs">0</strong>
+          </article>
+          <article>
+            <span>Alertas</span>
+            <strong id="total-alerts">0</strong>
+          </article>
+          <article>
+            <span>Tipos</span>
+            <strong id="total-types">0</strong>
+          </article>
+        </section>
+
+        <section class="grid">
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Alertas recientes</h2>
+              <select id="alert-limit">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tipo</th>
+                    <th>Severidad</th>
+                    <th>IP</th>
+                    <th>Endpoint</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody id="alerts-body"></tbody>
+              </table>
+            </div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-header">
+              <h2>Logs recientes</h2>
+              <select id="log-limit">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Evento</th>
+                    <th>Estado</th>
+                    <th>IP</th>
+                    <th>Endpoint</th>
+                    <th>Fecha</th>
+                  </tr>
+                </thead>
+                <tbody id="logs-body"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="panel security-panel">
+          <div class="panel-header">
+            <h2>Seguridad</h2>
+            <button id="setup-2fa-button" type="button">Configurar 2FA</button>
+          </div>
+          <div id="totp-setup" class="totp hidden">
+            <img id="totp-qr" alt="Codigo QR TOTP" />
+            <div>
+              <label>
+                Codigo
+                <input id="totp-verify-code" type="text" inputmode="numeric" autocomplete="one-time-code" />
+              </label>
+              <button id="verify-2fa-button" type="button">Activar</button>
+            </div>
+          </div>
+          <p id="dashboard-message" class="message"></p>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
