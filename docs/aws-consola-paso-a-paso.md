@@ -390,8 +390,44 @@ Importante:
 
 Conectate a `fraud-log-pipeline-kafka`.
 
+Haz el SSH primero y espera a ver el prompt de Kafka antes de pegar comandos de instalacion. No pegues el bloque completo junto con el `ssh`; si respondes `no` al mensaje de autenticidad del host, los comandos siguientes se ejecutaran en la maquina donde estabas antes.
+
+Desde el gateway:
+
 ```bash
-cd /opt/fraud-log-pipeline
+ssh -i /home/ec2-user/fraud-log-key.pem ec2-user@$KAFKA_PRIVATE_IP
+```
+
+Cuando pregunte:
+
+```text
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+```
+
+responde:
+
+```text
+yes
+```
+
+Confirma que el prompt sea parecido a:
+
+```text
+[ec2-user@ip-10-0-21-209 ~]$
+```
+
+Luego ejecuta:
+
+```bash
+cd /opt
+sudo rm -rf fraud-log-pipeline
+sudo git clone https://github.com/LUISDACA/pow-final.git fraud-log-pipeline
+sudo chown -R ec2-user:ec2-user fraud-log-pipeline
+cd fraud-log-pipeline
+cat > .env <<'EOF'
+KAFKA_PRIVATE_IP=10.0.21.209
+KAFKA_LOG_RETENTION_HOURS=24
+EOF
 cp infra/aws/remote/kafka/docker-compose.yml docker-compose.yml
 docker compose up -d
 docker compose ps
