@@ -5,6 +5,7 @@ flush ruleset
 define ADMIN_PUBLIC_IP = 203.0.113.10
 define API_PRIVATE_IP = 10.0.1.20
 define DASHBOARD_PRIVATE_IP = 10.0.2.40
+define DOCKER_BRIDGE_CIDR = 172.16.0.0/12
 
 table inet filter {
     chain input {
@@ -25,6 +26,12 @@ table inet filter {
 
     chain forward {
         type filter hook forward priority 0; policy drop;
+
+        ct state established,related accept
+        ct state invalid drop
+
+        ip saddr $DOCKER_BRIDGE_CIDR ip daddr $API_PRIVATE_IP tcp dport 8000 accept
+        ip saddr $DOCKER_BRIDGE_CIDR ip daddr $DASHBOARD_PRIVATE_IP tcp dport 3000 accept
     }
 
     chain output {
