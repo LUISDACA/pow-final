@@ -299,7 +299,7 @@ Tienes dos caminos. El mas simple para clase es GitHub.
 ```bash
 cd /opt
 sudo rm -rf fraud-log-pipeline
-sudo git clone URL_DEL_REPO fraud-log-pipeline
+sudo git clone https://github.com/LUISDACA/pow-final.git fraud-log-pipeline
 sudo chown -R ec2-user:ec2-user fraud-log-pipeline
 cd fraud-log-pipeline
 ```
