@@ -48,6 +48,12 @@ sudo -u postgres psql -tc "SELECT 1 FROM pg_database WHERE datname='fraud_logs_d
   sudo -u postgres createdb -O "${POSTGRES_USER}" fraud_logs_db
 
 sudo -u postgres psql -d fraud_logs_db -f "$PROJECT_DIR/infra/postgres/init.sql"
+sudo -u postgres psql -d fraud_logs_db -c "ALTER SCHEMA public OWNER TO ${POSTGRES_USER};"
+sudo -u postgres psql -d fraud_logs_db -c "ALTER TABLE access_logs, fraud_alerts, users, refresh_tokens OWNER TO ${POSTGRES_USER};"
+sudo -u postgres psql -d fraud_logs_db -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO ${POSTGRES_USER};"
+sudo -u postgres psql -d fraud_logs_db -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO ${POSTGRES_USER};"
+sudo -u postgres psql -d fraud_logs_db -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${POSTGRES_USER};"
+sudo -u postgres psql -d fraud_logs_db -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${POSTGRES_USER};"
 
 cd "$PROJECT_DIR/fraud-consumer"
 python3 -m venv .venv
