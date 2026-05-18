@@ -18,7 +18,9 @@ ADMIN_PASSWORD="${ADMIN_PASSWORD:-Admin2026Grupo4}"
 sudo dnf install -y python3 python3-pip git nftables
 sudo dnf install -y postgresql15-server postgresql15 || sudo dnf install -y postgresql-server postgresql
 
-if ! sudo systemctl list-unit-files | grep -q '^postgresql.service'; then
+sudo systemctl daemon-reload
+
+if ! sudo systemctl cat postgresql.service >/dev/null 2>&1; then
   echo "postgresql.service not found after install"
   exit 1
 fi
