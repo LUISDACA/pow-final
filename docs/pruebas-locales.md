@@ -38,6 +38,24 @@ Generar SQLi controlado de laboratorio:
 Invoke-RestMethod "http://localhost:8080/ingest/lab/vulnerable-search?username=demo%27%20OR%201%3D1--"
 ```
 
+Generar SQLi UNION-based contra el endpoint vulnerable:
+
+```powershell
+Invoke-RestMethod "http://localhost:8080/ingest/lab/vulnerable-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+```
+
+Probar el endpoint reparado con el mismo payload:
+
+```powershell
+Invoke-RestMethod "http://localhost:8080/ingest/lab/safe-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+```
+
+Resultado esperado:
+
+- `/lab/vulnerable-search` devuelve una fila inyectada `mallory`.
+- `/lab/safe-search` trata el payload como texto y devuelve `rows: []`.
+- El consumer genera alerta `SQL_INJECTION_ATTEMPT`.
+
 Consultar logs:
 
 ```powershell

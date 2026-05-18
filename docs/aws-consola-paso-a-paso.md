@@ -562,6 +562,24 @@ SQLi controlado:
 curl.exe "http://GATEWAY_PUBLIC_IP/ingest/lab/vulnerable-search?username=demo%27%20OR%201%3D1--"
 ```
 
+SQLi UNION-based contra endpoint vulnerable:
+
+```powershell
+curl.exe "http://GATEWAY_PUBLIC_IP/ingest/lab/vulnerable-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+```
+
+Endpoint reparado con consulta parametrizada:
+
+```powershell
+curl.exe "http://GATEWAY_PUBLIC_IP/ingest/lab/safe-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+```
+
+Resultado esperado:
+
+- Vulnerable: devuelve una fila inyectada `mallory`.
+- Reparado: devuelve `rows: []`.
+- PostgreSQL registra alerta `SQL_INJECTION_ATTEMPT`.
+
 En EC2 App:
 
 ```bash
