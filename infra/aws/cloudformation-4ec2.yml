@@ -279,15 +279,8 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           dnf update -y
-          dnf install -y docker git nftables
-          mkdir -p /usr/local/lib/docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-          curl -SL https://github.com/docker/buildx/releases/download/v0.19.3/buildx-v0.19.3.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
-          systemctl enable --now docker
+          dnf install -y git nftables
           systemctl enable --now nftables
-          usermod -aG docker ec2-user
           mkdir -p /opt/fraud-log-pipeline
           chown -R ec2-user:ec2-user /opt/fraud-log-pipeline
       Tags:
@@ -310,15 +303,8 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           dnf update -y
-          dnf install -y docker git nftables
-          mkdir -p /usr/local/lib/docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-          curl -SL https://github.com/docker/buildx/releases/download/v0.19.3/buildx-v0.19.3.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
-          systemctl enable --now docker
+          dnf install -y git nftables
           systemctl enable --now nftables
-          usermod -aG docker ec2-user
           mkdir -p /opt/fraud-log-pipeline
           chown -R ec2-user:ec2-user /opt/fraud-log-pipeline
       Tags:
@@ -341,15 +327,8 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           dnf update -y
-          dnf install -y docker git nftables
-          mkdir -p /usr/local/lib/docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-          curl -SL https://github.com/docker/buildx/releases/download/v0.19.3/buildx-v0.19.3.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
-          systemctl enable --now docker
+          dnf install -y git nftables
           systemctl enable --now nftables
-          usermod -aG docker ec2-user
           mkdir -p /opt/fraud-log-pipeline
           chown -R ec2-user:ec2-user /opt/fraud-log-pipeline
       Tags:
@@ -372,15 +351,8 @@ Resources:
         Fn::Base64: !Sub |
           #!/bin/bash
           dnf update -y
-          dnf install -y docker git nftables
-          mkdir -p /usr/local/lib/docker/cli-plugins
-          curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
-          curl -SL https://github.com/docker/buildx/releases/download/v0.19.3/buildx-v0.19.3.linux-amd64 -o /usr/local/lib/docker/cli-plugins/docker-buildx
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
-          chmod +x /usr/local/lib/docker/cli-plugins/docker-buildx
-          systemctl enable --now docker
+          dnf install -y git nftables
           systemctl enable --now nftables
-          usermod -aG docker ec2-user
           mkdir -p /opt/fraud-log-pipeline
           chown -R ec2-user:ec2-user /opt/fraud-log-pipeline
       Tags:

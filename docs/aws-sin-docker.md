@@ -1,16 +1,8 @@
-# AWS sin Docker
+# AWS Nativo con systemd
 
-Esta guia migra el despliegue EC2 a servicios nativos con `systemd`:
+Esta guia describe el despliegue final en AWS EC2 usando servicios nativos, sin contenedores.
 
-- Gateway: Nginx instalado en el host.
-- API: FastAPI + Python venv + Uvicorn.
-- Kafka: Apache Kafka instalado en `/opt/kafka`.
-- App: PostgreSQL, consumer y dashboard con servicios `systemd`.
-- nftables: reglas directas sobre puertos reales, sin Docker bridge/NAT.
-
-## Variables reales
-
-Usa tus IPs actuales:
+## Variables del Entorno
 
 ```bash
 GATEWAY_PUBLIC_IP="3.149.234.60"
@@ -21,35 +13,10 @@ APP_PRIVATE_IP="10.0.21.138"
 ADMIN_PUBLIC_IP="190.253.181.253"
 ```
 
-## 1. Detener Docker antes de migrar
-
-En cada instancia donde vas a migrar:
-
-```bash
-cd /opt/fraud-log-pipeline 2>/dev/null || true
-docker compose down 2>/dev/null || true
-sudo systemctl disable --now docker 2>/dev/null || true
-```
-
-En Gateway, si el compose estaba dentro de `gateway/`:
-
-```bash
-cd /opt/fraud-log-pipeline/gateway 2>/dev/null || true
-docker compose down 2>/dev/null || true
-sudo systemctl disable --now docker 2>/dev/null || true
-```
-
-## 2. Kafka nativo
-
-Desde Gateway:
+## Kafka
 
 ```bash
 ssh -i /home/ec2-user/fraud-log-key.pem ec2-user@10.0.21.209
-```
-
-Dentro de Kafka:
-
-```bash
 cd /opt/fraud-log-pipeline
 git pull
 export KAFKA_PRIVATE_IP="10.0.21.209"
@@ -61,21 +28,14 @@ infra/aws/native/kafka/install-kafka.sh
 Validar:
 
 ```bash
-/opt/kafka/bin/kafka-topics.sh --bootstrap-server 10.0.21.209:9092 --list
 sudo systemctl status kafka --no-pager
+/opt/kafka/bin/kafka-topics.sh --bootstrap-server 10.0.21.209:9092 --list
 ```
 
-## 3. App, DB y Dashboard nativos
-
-Desde Gateway:
+## APP / DB / Dashboard
 
 ```bash
 ssh -i /home/ec2-user/fraud-log-key.pem ec2-user@10.0.21.138
-```
-
-Dentro de App:
-
-```bash
 cd /opt/fraud-log-pipeline
 git pull
 export KAFKA_PRIVATE_IP="10.0.21.209"
@@ -92,22 +52,15 @@ Validar:
 
 ```bash
 curl http://localhost:3000/api/health
+sudo systemctl status postgresql --no-pager
 sudo systemctl status fraud-consumer --no-pager
 sudo systemctl status fraud-dashboard --no-pager
-sudo -u postgres psql -d fraud_logs_db -c "SELECT COUNT(*) FROM users;"
 ```
 
-## 4. API nativa
-
-Desde Gateway:
+## API Productora
 
 ```bash
 ssh -i /home/ec2-user/fraud-log-key.pem ec2-user@10.0.11.168
-```
-
-Dentro de API:
-
-```bash
 cd /opt/fraud-log-pipeline
 git pull
 export KAFKA_PRIVATE_IP="10.0.21.209"
@@ -122,9 +75,7 @@ curl http://localhost:8000/
 sudo systemctl status fraud-producer-api --no-pager
 ```
 
-## 5. Gateway Nginx nativo
-
-En Gateway:
+## Gateway Nginx
 
 ```bash
 cd /opt/fraud-log-pipeline
@@ -135,54 +86,68 @@ chmod +x infra/aws/native/gateway/install-gateway.sh
 infra/aws/native/gateway/install-gateway.sh
 ```
 
+Para TLS DuckDNS, usar:
+
+```bash
+sudo cp infra/aws/native/gateway/nginx-tls-duckdns.conf.template /etc/nginx/nginx.conf
+sudo sed -i "s/API_PRIVATE_IP/10.0.11.168/g" /etc/nginx/nginx.conf
+sudo sed -i "s/APP_PRIVATE_IP/10.0.21.138/g" /etc/nginx/nginx.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
 Validar:
 
 ```bash
-curl http://localhost/gateway/health
-curl http://localhost/ingest/
-sudo nginx -t
+curl -k https://api.fraud-log-pipeline.duckdns.org/ingest/
+curl -k https://dashboard.fraud-log-pipeline.duckdns.org/api/health
 sudo systemctl status nginx --no-pager
 ```
 
-Desde tu PC:
+## nftables
 
-```powershell
-curl.exe "http://3.149.234.60/gateway/health"
-curl.exe "http://3.149.234.60/ingest/"
-```
-
-## 6. nftables sin Docker
-
-Sin Docker, las reglas son mas simples. Puedes aplicar las plantillas actuales por rol:
+Aplicar las plantillas por rol:
 
 - `infra/nftables/gateway.nft`
 - `infra/nftables/api.nft`
 - `infra/nftables/kafka.nft`
 - `infra/nftables/processing-dashboard-db.nft`
 
-Renderiza IPs antes de aplicar y valida siempre con `nft -c`:
+Siempre validar antes de aplicar:
 
 ```bash
 sudo nft -c -f archivo.rendered.nft
 sudo nft -f archivo.rendered.nft
+sudo cp archivo.rendered.nft /etc/sysconfig/nftables.conf
+sudo systemctl restart nftables
 sudo nft list ruleset
 ```
 
-En API ya no necesitas `DOCKER-USER`; el puerto real es `8000`.
+## Pruebas Finales
 
-## 7. Pruebas finales
-
-Desde tu PC:
+Desde Windows:
 
 ```powershell
-curl.exe "http://3.149.234.60/ingest/"
-curl.exe "http://3.149.234.60/ingest/lab/vulnerable-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
-curl.exe "http://3.149.234.60/ingest/lab/safe-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+curl.exe "https://api.fraud-log-pipeline.duckdns.org/ingest/"
+curl.exe "https://dashboard.fraud-log-pipeline.duckdns.org/api/health"
 ```
 
-En App:
+SQL Injection vulnerable:
+
+```powershell
+curl.exe "https://api.fraud-log-pipeline.duckdns.org/ingest/lab/vulnerable-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+```
+
+SQL Injection reparado:
+
+```powershell
+curl.exe "https://api.fraud-log-pipeline.duckdns.org/ingest/lab/safe-search?username=alice%27%20UNION%20SELECT%2099,%27mallory%27,%27mallory@example.com%27,%27admin%27--"
+```
+
+Alertas:
 
 ```bash
+ssh -i /home/ec2-user/fraud-log-key.pem ec2-user@10.0.21.138
 sudo -u postgres psql -d fraud_logs_db -P pager=off \
   -c "SELECT alert_type, severity, ip_address, endpoint, created_at FROM fraud_alerts ORDER BY created_at DESC LIMIT 10;"
 ```

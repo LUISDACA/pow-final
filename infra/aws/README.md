@@ -1,68 +1,76 @@
-# AWS deployment
+# Infraestructura AWS
 
-Este directorio prepara el despliegue real en AWS con 4 EC2:
+Este directorio contiene la infraestructura y los scripts usados para el despliegue final en AWS EC2 sin Docker.
 
-- EC2-1: gateway Nginx.
-- EC2-2: producer API.
-- EC2-3: Kafka.
-- EC2-4: consumer, PostgreSQL y dashboard.
+## Componentes
 
-## Pre-requisitos
+- `cloudformation-4ec2.yml`: plantilla base para crear VPC, subnets, security groups, IAM role SSM y 4 instancias EC2.
+- `env.example`: ejemplo de variables para el despliegue.
+- `native/`: scripts de instalacion nativa y servicios `systemd`.
 
-1. Instalar AWS CLI v2.
-2. Configurar credenciales:
+## Roles EC2
 
-```powershell
-aws configure
-aws sts get-caller-identity
+| Instancia | Rol | Componentes |
+|---|---|---|
+| EC2-1 | Gateway | Nginx, TLS, nftables |
+| EC2-2 | API productora | FastAPI + Uvicorn |
+| EC2-3 | Kafka | Apache Kafka KRaft |
+| EC2-4 | Procesamiento + DB + Dashboard | PostgreSQL, consumer, dashboard |
+
+## Despliegue Nativo
+
+La guia principal de despliegue esta en:
+
+- `docs/aws-consola-paso-a-paso.md`
+- `docs/aws-sin-docker.md`
+
+Scripts principales:
+
+```text
+native/gateway/install-gateway.sh
+native/api/install-api.sh
+native/kafka/install-kafka.sh
+native/app/install-app.sh
 ```
 
-3. Tener un EC2 Key Pair creado en la region elegida.
-4. Saber tu IP publica para `AdminCidr`, por ejemplo `x.x.x.x/32`.
+Servicios `systemd`:
 
-## Crear infraestructura
-
-Ejemplo:
-
-```powershell
-aws cloudformation deploy `
-  --region us-east-1 `
-  --stack-name fraud-log-pipeline `
-  --template-file infra/aws/cloudformation-4ec2.yml `
-  --capabilities CAPABILITY_NAMED_IAM `
-  --parameter-overrides `
-    AdminCidr=TU_IP_PUBLICA/32 `
-    KeyName=TU_KEY_PAIR
+```text
+fraud-producer-api.service
+kafka.service
+fraud-consumer.service
+fraud-dashboard.service
+nginx.service
+postgresql.service
+nftables.service
 ```
 
-Ver salidas:
+## Seguridad
 
-```powershell
-aws cloudformation describe-stacks `
-  --region us-east-1 `
-  --stack-name fraud-log-pipeline `
-  --query "Stacks[0].Outputs"
+La segmentacion por firewall se encuentra en:
+
+```text
+infra/nftables/
 ```
 
-## Desplegar servicios
+El Gateway usa HTTPS con certificado wildcard:
 
-Despues de crear el stack:
+```text
+*.fraud-log-pipeline.duckdns.org
+```
 
-1. Copia el codigo de `producer-api` a la EC2 API.
-2. Copia `infra/aws/remote/api/docker-compose.yml` a la EC2 API.
-3. Copia `infra/aws/remote/kafka/docker-compose.yml` a la EC2 Kafka.
-4. Copia `dashboard`, `fraud-consumer` e `infra/postgres/init.sql` a la EC2 App.
-5. Copia `infra/aws/remote/app/docker-compose.yml` a la EC2 App.
-6. Copia `infra/aws/remote/gateway/docker-compose.yml` y `nginx.conf` renderizado a la EC2 Gateway.
+Plantilla Nginx TLS:
 
-Las EC2 privadas se administran mejor con AWS Systems Manager Session Manager. El template ya agrega el rol `AmazonSSMManagedInstanceCore`.
+```text
+native/gateway/nginx-tls-duckdns.conf.template
+```
 
-## Costos
+## Limpieza de Costos
 
-Este stack crea recursos con costo, incluyendo EC2, EBS y un NAT Gateway. Para demo corta, elimina el stack al terminar:
+Si se creo la infraestructura con CloudFormation, eliminar el stack al finalizar la demo evita costos continuos:
 
 ```powershell
 aws cloudformation delete-stack `
-  --region us-east-1 `
+  --region us-east-2 `
   --stack-name fraud-log-pipeline
 ```
